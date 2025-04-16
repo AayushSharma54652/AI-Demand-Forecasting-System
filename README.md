@@ -10,7 +10,7 @@ A sophisticated demand forecasting platform that leverages machine learning and 
 - **Comprehensive analytics**: Statistical analysis, feature importance, and seasonal decomposition
 - **Export functionality**: Download results in CSV, Excel, and PDF formats
 
-![Forecast Dashboard](static/images/dashboard.png)
+
 
 ## Project Structure
 
