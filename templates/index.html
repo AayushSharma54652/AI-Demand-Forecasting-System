@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Demand Forecasting</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-line me-2"></i>AI-Powered Demand Forecasting
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload">Upload Data</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h1 class="display-4 mb-4">Welcome to AI-Powered Demand Forecasting</h1>
+                <p class="lead">Leverage advanced AI algorithms to predict future demand with high accuracy.</p>
+                <div class="mt-5">
+                    <a href="/upload" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-upload me-2"></i>Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm feature-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-robot feature-icon"></i>
+                        <h3 class="my-3">AI-Driven Analysis</h3>
+                        <p>Our system uses advanced machine learning algorithms to detect patterns in your historical data.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm feature-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-brain feature-icon"></i>
+                        <h3 class="my-3">Multiple ML Models</h3>
+                        <p>Automatically selects the best forecasting model based on your data characteristics.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm feature-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar feature-icon"></i>
+                        <h3 class="my-3">Interactive Visualizations</h3>
+                        <p>Explore forecasts through interactive charts and insightful visualizations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h2 class="text-center mb-4">How It Works</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">1</div>
+                    <h4>Upload Data</h4>
+                    <p>Upload your historical sales or demand data in CSV or Excel format.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">2</div>
+                    <h4>Configure Parameters</h4>
+                    <p>Select relevant columns and set forecasting parameters.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">3</div>
+                    <h4>AI Processing</h4>
+                    <p>Our system performs feature engineering and selects the best models.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">4</div>
+                    <h4>View Results</h4>
+                    <p>Analyze forecasts, model performance, and feature importance.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="row mt-5 mb-5">
+            <div class="col-md-8 offset-md-2 text-center">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <h3>Ready to optimize your inventory planning?</h3>
+                        <p>Get accurate demand forecasts with our AI-powered system today.</p>
+                        <a href="/upload" class="btn btn-success btn-lg mt-3">Start Forecasting Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AI-Powered Demand Forecasting</h5>
+                    <p>An advanced solution for logistics and supply chain optimization.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><small>&copy; 2025 AI Demand Forecasting. All rights reserved.</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

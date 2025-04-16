@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecast Results - AI-Powered Demand Forecasting</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .external-factor-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background-color: #e3f2fd;
+            color: #0d6efd;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .external-factor-impact {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .impact-bar {
+            height: 10px;
+            background-color: #0d6efd;
+            margin-left: 10px;
+            border-radius: 5px;
+        }
+        
+        .impact-value {
+            min-width: 40px;
+            text-align: right;
+            margin-left: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-line me-2"></i>AI-Powered Demand Forecasting
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload">Upload Data</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Top Summary Row -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h2 class="mb-0"><i class="fas fa-check-circle text-success me-2"></i>Forecast Complete</h2>
+                                <p class="text-muted">AI-powered demand forecasting results</p>
+                            </div>
+                            <div class="col-md-8 d-flex justify-content-end align-items-center">
+                                <div class="ai-model-badge me-3">
+                                    <i class="fas fa-robot me-2"></i>
+                                    <span class="fw-bold">Best Model:</span> {{ model_name }}
+                                </div>
+                                <div class="accuracy-badge">
+                                    <i class="fas fa-bullseye me-2"></i>
+                                    <span class="fw-bold">Accuracy:</span> {{ "%.2f"|format(metrics.get('r2', 0) * 100) }}%
+                                </div>
+                                {% if external_factors and external_factors.used %}
+                                <div class="external-factors-badge ms-3">
+                                    <i class="fas fa-globe me-2"></i>
+                                    <span class="fw-bold">External Factors:</span> Enabled
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Forecast Chart and Statistics -->
+            <div class="col-md-8">
+                <!-- Main Forecast Chart -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i>Demand Forecast</h4>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary active" id="view-all">All Data</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="view-forecast">Forecast Only</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="view-history">History Only</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="forecast-chart" style="height: 450px;"></div>
+                    </div>
+                </div>
+
+                <!-- Forecast Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted mb-1">Average Demand</h6>
+                                <h3 class="card-text mb-0" id="avg-demand">{{ "%.1f"|format(evaluation.forecast_stats.mean) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted mb-1">Peak Demand</h6>
+                                <h3 class="card-text mb-0" id="peak-demand">{{ "%.1f"|format(evaluation.forecast_stats.max) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted mb-1">Minimum Demand</h6>
+                                <h3 class="card-text mb-0" id="min-demand">{{ "%.1f"|format(evaluation.forecast_stats.min) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted mb-1">Volatility</h6>
+                                <h3 class="card-text mb-0" id="volatility">{{ "%.1f"|format(evaluation.forecast_stats.std) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seasonal Decomposition -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0"><i class="fas fa-wave-square me-2"></i>Seasonal Analysis</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="seasonal-chart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Model Details and Feature Importance -->
+            <div class="col-md-4">
+                <!-- Model Performance Metrics -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0"><i class="fas fa-brain me-2"></i>AI Model Performance</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="model-metric-card">
+                                    <h6 class="text-muted">RMSE</h6>
+                                    <h4>{{ "%.2f"|format(metrics.get('rmse', 0)) }}</h4>
+                                    <small class="text-muted">Root Mean Square Error</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="model-metric-card">
+                                    <h6 class="text-muted">MAE</h6>
+                                    <h4>{{ "%.2f"|format(metrics.get('mae', 0)) }}</h4>
+                                    <small class="text-muted">Mean Absolute Error</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="model-metric-card">
+                                    <h6 class="text-muted">MAPE</h6>
+                                    <h4>{{ "%.1f"|format(metrics.get('mape', 0)) }}%</h4>
+                                    <small class="text-muted">Mean Abs. Percentage Error</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="model-metric-card">
+                                    <h6 class="text-muted">R²</h6>
+                                    <h4>{{ "%.2f"|format(metrics.get('r2', 0)) }}</h4>
+                                    <small class="text-muted">Coefficient of Determination</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3">Model Comparison</h5>
+                        <div id="model-comparison-chart" style="height: 250px;"></div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Feature Importance</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Factors influencing the forecast predictions:</p>
+                        <div id="feature-importance-chart" style="height: 400px;"></div>
+                    </div>
+                </div>
+
+                <!-- External Factors Impact (new section) -->
+                {% if external_factors and external_factors.used %}
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-globe me-2"></i>External Factors Impact</h4>
+                        <span class="badge bg-info">NEW</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Overall Contribution</h5>
+                                <span class="badge bg-primary">{{ external_factors.importance }}%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: {{ external_factors.importance }}%;" 
+                                     aria-valuenow="{{ external_factors.importance }}" aria-valuemin="0" aria-valuemax="100">
+                                     {{ external_factors.importance }}%
+                                </div>
+                            </div>
+                            <p class="text-muted">External factors contributed <strong>{{ external_factors.importance }}%</strong> to the forecast accuracy.</p>
+                        </div>
+                        
+                        {% if external_factors.top_factors %}
+                        <hr>
+                        <h5 class="mb-3">Most Influential External Factors</h5>
+                        {% for factor in external_factors.top_factors %}
+                        <div class="external-factor-impact">
+                            <span>{{ factor.name }}</span>
+                            <div class="impact-bar" style="width: {{ factor.importance * 2 }}px;"></div>
+                            <span class="impact-value">{{ factor.importance }}%</span>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Insights & Recommendations -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0"><i class="fas fa-lightbulb me-2"></i>AI-Generated Insights</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-chart-line me-2"></i>Trend Analysis</h5>
+                            <p>The forecast shows a <span id="trend-direction">{{ "positive" if evaluation.forecast_stats.mean > 100 else "stable" }}</span> trend with 
+                            {{ "increasing" if evaluation.forecast_stats.mean > 100 else "consistent" }} demand levels.</p>
+                        </div>
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Stock Planning Alert</h5>
+                            <p>Prepare for peak demand of {{ "%.1f"|format(evaluation.forecast_stats.max) }} units 
+                            during the forecast period.</p>
+                        </div>
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle me-2"></i>Recommendation</h5>
+                            <p>Maintain average inventory of {{ "%.1f"|format(evaluation.forecast_stats.mean * 1.2) }} units with 20% safety stock.</p>
+                        </div>
+                        
+                        {% if external_factors and external_factors.used and external_factors.top_factors %}
+                        <div class="alert alert-primary">
+                            <h5><i class="fas fa-globe me-2"></i>External Factors Insight</h5>
+                            <p>{{ external_factors.top_factors[0].name }} is the most significant external factor influencing your demand patterns.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <div class="card shadow">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Download Results</h4>
+                        <div>
+                            <button class="btn btn-outline-primary me-2" id="export-csv">
+                                <i class="fas fa-file-csv me-2"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-primary me-2" id="export-excel">
+                                <i class="fas fa-file-excel me-2"></i>Export Excel
+                            </button>
+                            <button class="btn btn-outline-primary me-2" id="export-pdf">
+                                <i class="fas fa-file-pdf me-2"></i>Export PDF
+                            </button>
+                            <button class="btn btn-primary" id="new-forecast">
+                                <i class="fas fa-plus me-2"></i>New Forecast
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AI-Powered Demand Forecasting</h5>
+                    <p>An advanced solution for logistics and supply chain optimization.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><small>&copy; 2025 AI Demand Forecasting. All rights reserved.</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Results JS -->
+    <script>
+        // Store data passed from Flask
+        const historicalData = {{ historical_data|safe }};
+        const forecastData = {{ forecast_data|safe }};
+        const featureImportance = {{ feature_importance|safe }};
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize main forecast chart
+            createForecastChart();
+            
+            // Initialize feature importance chart
+            createFeatureImportanceChart();
+            
+            // Initialize model comparison chart
+            createModelComparisonChart();
+            
+            // Initialize seasonal decomposition chart
+            createSeasonalChart();
+            
+            // View control buttons
+            document.getElementById('view-all').addEventListener('click', function() {
+                updateChartView('all');
+                setActiveButton(this);
+            });
+            
+            document.getElementById('view-forecast').addEventListener('click', function() {
+                updateChartView('forecast');
+                setActiveButton(this);
+            });
+            
+            document.getElementById('view-history').addEventListener('click', function() {
+                updateChartView('history');
+                setActiveButton(this);
+            });
+            
+            // Export buttons with updated functionality
+            document.getElementById('export-csv').addEventListener('click', function() {
+                // Show loading indicator
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+                this.disabled = true;
+                
+                // Create a link element to trigger the download
+                const link = document.createElement('a');
+                link.href = '/export-csv';
+                link.target = '_blank';
+                
+                // Trigger the download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Reset button state after a short delay
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 1500);
+            });
+            
+            document.getElementById('export-excel').addEventListener('click', function() {
+                // Show loading indicator
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+                this.disabled = true;
+                
+                // Create a link element to trigger the download
+                const link = document.createElement('a');
+                link.href = '/export-excel';
+                link.target = '_blank';
+                
+                // Trigger the download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Reset button state after a short delay
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 1500);
+            });
+            
+            document.getElementById('export-pdf').addEventListener('click', function() {
+                // Show loading indicator
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+                this.disabled = true;
+                
+                // Create a link element to trigger the download
+                const link = document.createElement('a');
+                link.href = '/export-pdf';
+                link.target = '_blank';
+                
+                // Trigger the download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Reset button state after a short delay
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 1500);
+            });
+            
+            document.getElementById('new-forecast').addEventListener('click', function() {
+                window.location.href = '/upload';
+            });
+        });
+        
+        function setActiveButton(button) {
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
+        
+        function createForecastChart() {
+            // Extract data for plotting
+            const historicalDates = historicalData.map(d => d.date || d.index);
+            const historicalValues = historicalData.map(d => d.value || d[Object.keys(d)[0]]);
+            
+            const forecastDates = forecastData.map(d => d.date || d.index);
+            const forecastValues = forecastData.map(d => d.forecast || d[Object.keys(d)[0]]);
+            const lowerBounds = forecastData.map(d => d.lower_bound || d[Object.keys(d)[1]]);
+            const upperBounds = forecastData.map(d => d.upper_bound || d[Object.keys(d)[2]]);
+            
+            // Create traces for Plotly
+            const historicalTrace = {
+                x: historicalDates,
+                y: historicalValues,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Historical Data',
+                line: {
+                    color: 'blue',
+                    width: 2
+                }
+            };
+            
+            const forecastTrace = {
+                x: forecastDates,
+                y: forecastValues,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Forecast',
+                line: {
+                    color: 'red',
+                    width: 2
+                }
+            };
+            
+            const upperBoundTrace = {
+                x: forecastDates,
+                y: upperBounds,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Upper Bound (95%)',
+                line: {
+                    width: 0,
+                    color: 'rgba(255, 0, 0, 0.3)'
+                },
+                fill: 'tonexty',
+                fillcolor: 'rgba(255, 0, 0, 0.1)'
+            };
+            
+            const lowerBoundTrace = {
+                x: forecastDates,
+                y: lowerBounds,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Lower Bound (95%)',
+                line: {
+                    width: 0,
+                    color: 'rgba(255, 0, 0, 0.3)'
+                }
+            };
+            
+            const data = [historicalTrace, forecastTrace, lowerBoundTrace, upperBoundTrace];
+            
+            const layout = {
+                title: 'Demand Forecast',
+                xaxis: {
+                    title: 'Date',
+                    showgrid: true,
+                    zeroline: false
+                },
+                yaxis: {
+                    title: 'Demand',
+                    showgrid: true,
+                    zeroline: false
+                },
+                hovermode: 'closest',
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    y: -0.2
+                },
+                margin: {
+                    l: 50,
+                    r: 50,
+                    t: 50,
+                    b: 50
+                }
+            };
+            
+            Plotly.newPlot('forecast-chart', data, layout);
+        }
+        
+        function updateChartView(view) {
+            const chartDiv = document.getElementById('forecast-chart');
+            
+            if (view === 'all') {
+                Plotly.restyle(chartDiv, {'visible': true}, [0, 1, 2, 3]);
+            } else if (view === 'forecast') {
+                Plotly.restyle(chartDiv, {'visible': [false, true, true, true]}, [0, 1, 2, 3]);
+            } else if (view === 'history') {
+                Plotly.restyle(chartDiv, {'visible': [true, false, false, false]}, [0, 1, 2, 3]);
+            }
+        }
+        
+        function createFeatureImportanceChart() {
+            // Extract feature importance data
+            const features = featureImportance.features.slice(0, 10); // Get top 10 features
+            const importance = featureImportance.importance.slice(0, 10);
+            
+            // Sort features by importance
+            const combinedData = features.map((feature, i) => ({ feature, importance: importance[i] }));
+            combinedData.sort((a, b) => b.importance - a.importance);
+            
+            const sortedFeatures = combinedData.map(d => d.feature);
+            const sortedImportance = combinedData.map(d => d.importance);
+            
+            // Color external factors differently
+            const colors = sortedFeatures.map(feature => {
+                // Check if the feature is an external factor
+                if (feature.startsWith('weather_') || 
+                    feature.startsWith('holiday_') || 
+                    feature.startsWith('econ_') || 
+                    feature.startsWith('event_') || 
+                    feature.startsWith('custom_')) {
+                    return 'rgba(13, 110, 253, 0.7)';  // Blue for external factors
+                }
+                return 'rgba(102, 187, 106, 0.7)';  // Green for internal factors
+            });
+            
+            const data = [{
+                x: sortedImportance,
+                y: sortedFeatures,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: colors,
+                    line: {
+                        color: colors.map(c => c.replace('0.7', '1.0')),
+                        width: 1
+                    }
+                }
+            }];
+            
+            const layout = {
+                title: '',
+                xaxis: {
+                    title: 'Importance Score',
+                    showgrid: true,
+                    zeroline: false
+                },
+                yaxis: {
+                    title: '',
+                    showgrid: true,
+                    zeroline: false
+                },
+                margin: {
+                    l: 150,
+                    r: 30,
+                    t: 20,
+                    b: 50
+                }
+            };
+            
+            Plotly.newPlot('feature-importance-chart', data, layout);
+        }
+        
+        function createModelComparisonChart() {
+            // Sample model comparison data - in a real app, this would come from the backend
+            const models = ['ARIMA', 'Prophet', 'Random Forest', 'Gradient Boosting'];
+            const accuracy = [0.82, 0.88, 0.91, 0.85];
+            
+            const data = [{
+                x: models,
+                y: accuracy,
+                type: 'bar',
+                marker: {
+                    color: 'rgba(0, 123, 255, 0.7)',
+                    line: {
+                        color: 'rgba(0, 123, 255, 1.0)',
+                        width: 1
+                    }
+                }
+            }];
+            
+            const layout = {
+                title: '',
+                xaxis: {
+                    title: '',
+                    showgrid: false,
+                    zeroline: false
+                },
+                yaxis: {
+                    title: 'Accuracy Score',
+                    showgrid: true,
+                    zeroline: false,
+                    range: [0, 1]
+                },
+                margin: {
+                    l: 50,
+                    r: 20,
+                    t: 20,
+                    b: 50
+                }
+            };
+            
+            Plotly.newPlot('model-comparison-chart', data, layout);
+        }
+        
+        function createSeasonalChart() {
+            // Sample seasonal decomposition - in a real app, this would come from the backend
+            const dates = [];
+            const observed = [];
+            const trend = [];
+            const seasonal = [];
+            const residual = [];
+            
+            // Generate sample data
+            const now = new Date();
+            for (let i = 0; i < 365; i++) {
+                const date = new Date(now);
+                date.setDate(now.getDate() - 365 + i);
+                dates.push(date);
+                
+                const trendValue = 100 + i * 0.1;
+                const seasonalValue = 20 * Math.sin(2 * Math.PI * i / 30.5) + 10 * Math.sin(2 * Math.PI * i / 7);
+                const randomValue = Math.random() * 10 - 5;
+                
+                trend.push(trendValue);
+                seasonal.push(seasonalValue);
+                residual.push(randomValue);
+                observed.push(trendValue + seasonalValue + randomValue);
+            }
+            
+            const traces = [
+                {
+                    x: dates,
+                    y: observed,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Observed',
+                    line: { color: 'blue' }
+                },
+                {
+                    x: dates,
+                    y: trend,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Trend',
+                    line: { color: 'red' }
+                },
+                {
+                    x: dates,
+                    y: seasonal,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Seasonal',
+                    line: { color: 'green' }
+                },
+                {
+                    x: dates,
+                    y: residual,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Residual',
+                    line: { color: 'gray' }
+                }
+            ];
+            
+            const layout = {
+                title: '',
+                xaxis: {
+                    title: 'Date',
+                    showgrid: true
+                },
+                yaxis: {
+                    title: 'Value',
+                    showgrid: true
+                },
+                hovermode: 'closest',
+                legend: {
+                    orientation: 'h',
+                    y: -0.2
+                },
+                margin: {
+                    l: 50,
+                    r: 20,
+                    t: 20,
+                    b: 80
+                }
+            };
+            
+            Plotly.newPlot('seasonal-chart', traces, layout);
+        }
+    </script>
+</body>
+</html>

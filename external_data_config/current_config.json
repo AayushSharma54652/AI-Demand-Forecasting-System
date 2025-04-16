@@ -1,0 +1,25 @@
+{
+    "weather": {
+        "enabled": true,
+        "location": "New York",
+        "importance": 0.8
+    },
+    "holidays": {
+        "enabled": true,
+        "country": "US",
+        "importance": 0.9
+    },
+    "economic": {
+        "enabled": true,
+        "country": "US",
+        "importance": 0.7
+    },
+    "events": {
+        "enabled": true,
+        "importance": 0.8
+    },
+    "custom_events": {
+        "enabled": false,
+        "events": []
+    }
+}

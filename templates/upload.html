@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Data - AI-Powered Demand Forecasting</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-line me-2"></i>AI-Powered Demand Forecasting
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/upload">Upload Data</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Your Data</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    <ul class="mb-0 pl-0" style="list-style-type: none;">
+                                        {% for message in messages %}
+                                            <li>{{ message }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <!-- Upload Form -->
+                        <form method="post" enctype="multipart/form-data" id="upload-form">
+                            <div class="mb-4">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Data Requirements:</strong>
+                                    <ul class="mt-2">
+                                        <li>CSV or Excel files with historical demand/sales data</li>
+                                        <li>Must contain a date column and at least one numeric demand column</li>
+                                        <li>Recommended to have at least 1 year of historical data for best results</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="file" class="form-label">Select File</label>
+                                <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+                                <div class="form-text">Upload CSV or Excel (XLSX/XLS) files only. Max size: 16MB.</div>
+                            </div>
+                            
+                            <div class="upload-area mb-4" id="drop-area">
+                                <div class="text-center p-5">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <h4 class="my-3">Drag & Drop Your File Here</h4>
+                                    <p class="text-muted">or click the "Select File" button above</p>
+                                </div>
+                            </div>
+                            
+                            <div class="file-info-container mb-4 d-none" id="file-info">
+                                <div class="alert alert-success">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-file-alt me-3 file-icon"></i>
+                                        <div>
+                                            <h5 class="mb-1" id="file-name">filename.csv</h5>
+                                            <span id="file-size">0 KB</span>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="remove-file">
+                                            <i class="fas fa-times"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>AI Processing Details:</h5>
+                                <div class="ai-process-steps">
+                                    <div class="ai-step">
+                                        <div class="ai-step-icon">
+                                            <i class="fas fa-brain"></i>
+                                        </div>
+                                        <div class="ai-step-content">
+                                            <h6>Data Analysis</h6>
+                                            <p>AI examines historical patterns, trends, and seasonality in your data</p>
+                                        </div>
+                                    </div>
+                                    <div class="ai-step">
+                                        <div class="ai-step-icon">
+                                            <i class="fas fa-cogs"></i>
+                                        </div>
+                                        <div class="ai-step-content">
+                                            <h6>Feature Engineering</h6>
+                                            <p>Automatic extraction of time-based features and data transformations</p>
+                                        </div>
+                                    </div>
+                                    <div class="ai-step">
+                                        <div class="ai-step-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <div class="ai-step-content">
+                                            <h6>Model Selection</h6>
+                                            <p>Multiple models are trained and compared to find the optimal performer</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                                    <i class="fas fa-upload me-2"></i>Upload & Process
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AI-Powered Demand Forecasting</h5>
+                    <p>An advanced solution for logistics and supply chain optimization.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><small>&copy; 2025 AI Demand Forecasting. All rights reserved.</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+</html>

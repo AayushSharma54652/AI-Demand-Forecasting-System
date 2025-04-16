@@ -1,0 +1,195 @@
+/* Main Styles for AI-Powered Demand Forecasting */
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+    font-weight: 600;
+}
+
+/* Feature Cards on Homepage */
+.feature-card {
+    text-align: center;
+    padding: 10px;
+    height: 100%;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #0d6efd;
+}
+
+/* Process Steps on Homepage */
+.process-step {
+    text-align: center;
+    padding: 20px 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    position: relative;
+}
+
+.process-number {
+    width: 40px;
+    height: 40px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin: 0 auto 15px;
+}
+
+/* Upload Page Styles */
+.upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    transition: all 0.3s;
+}
+
+.upload-area:hover {
+    border-color: #0d6efd;
+    background-color: #f0f7ff;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: #6c757d;
+}
+
+.file-icon {
+    font-size: 2rem;
+    color: #198754;
+}
+
+/* AI Process Steps */
+.ai-process-steps {
+    margin: 20px 0;
+}
+
+.ai-step {
+    display: flex;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.ai-step-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.ai-step-icon i {
+    color: #0d6efd;
+}
+
+.ai-step-content h6 {
+    margin-bottom: 3px;
+    font-weight: 600;
+}
+
+.ai-step-content p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Results Page Styles */
+.ai-model-badge, .accuracy-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    background-color: #f0f7ff;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.ai-model-badge i, .accuracy-badge i {
+    color: #0d6efd;
+}
+
+.model-metric-card {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.model-metric-card h6 {
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.model-metric-card h4 {
+    color: #0d6efd;
+    margin-bottom: 5px;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: 50px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .ai-model-badge, .accuracy-badge {
+        margin-top: 10px;
+    }
+    
+    .process-step {
+        margin-bottom: 20px;
+    }
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Chart container styles */
+#forecast-chart, #seasonal-chart, #feature-importance-chart, #model-comparison-chart {
+    width: 100%;
+    background-color: white;
+    border-radius: 5px;
+}

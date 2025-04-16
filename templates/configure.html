@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Data - AI-Powered Demand Forecasting</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-line me-2"></i>AI-Powered Demand Forecasting
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload">Upload Data</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0"><i class="fas fa-cogs me-2"></i>Configure Forecasting Parameters</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    <ul class="mb-0 pl-0" style="list-style-type: none;">
+                                        {% for message in messages %}
+                                            <li>{{ message }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <!-- Data Preview Section -->
+                        <div class="mb-4">
+                            <h4 class="mb-3">Data Preview</h4>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            {% for column in columns %}
+                                                <th>{{ column }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in preview %}
+                                            <tr>
+                                                {% for column in columns %}
+                                                    <td>{{ row[column] }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="form-text text-muted">Showing first 5 rows of your data.</div>
+                        </div>
+
+                        <!-- Configure Form -->
+                        <form method="post" id="configure-form">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="date_column" class="form-label">Date Column <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="date_column" name="date_column" required>
+                                            <option value="" selected disabled>Select Date Column</option>
+                                            {% for column in columns %}
+                                                <option value="{{ column }}">{{ column }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Select the column containing date information
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="target_column" class="form-label">Target Column <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="target_column" name="target_column" required>
+                                            <option value="" selected disabled>Select Target Column</option>
+                                            {% for column in columns %}
+                                                <option value="{{ column }}">{{ column }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Select the column containing the demand values to forecast
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Forecasting Parameters</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="forecast_horizon" class="form-label">Forecast Horizon</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="forecast_horizon" name="forecast_horizon" value="30" min="1" max="365" required>
+                                                    <span class="input-group-text">days</span>
+                                                </div>
+                                                <div class="form-text">Number of days to forecast into the future</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="seasonality" class="form-label">Seasonality</label>
+                                                <select class="form-select" id="seasonality" name="seasonality">
+                                                    <option value="auto" selected>Auto-detect</option>
+                                                    <option value="daily">Daily</option>
+                                                    <option value="weekly">Weekly</option>
+                                                    <option value="monthly">Monthly</option>
+                                                    <option value="quarterly">Quarterly</option>
+                                                    <option value="yearly">Yearly</option>
+                                                </select>
+                                                <div class="form-text">The AI can auto-detect seasonality patterns</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="confidence_interval" class="form-label">Confidence Interval</label>
+                                                <select class="form-select" id="confidence_interval" name="confidence_interval">
+                                                    <option value="80">80%</option>
+                                                    <option value="90">90%</option>
+                                                    <option value="95" selected>95%</option>
+                                                    <option value="99">99%</option>
+                                                </select>
+                                                <div class="form-text">Confidence level for prediction intervals</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- External Factors Section -->
+                            {% if external_factors_available %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">External Factors Integration</h5>
+                                        <span class="badge bg-info">NEW</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="use_external_factors" name="use_external_factors">
+                                        <label class="form-check-label" for="use_external_factors">
+                                            <span class="fw-bold">Enable External Factors</span>
+                                            <div class="text-muted small">Incorporate external data sources to improve forecast accuracy</div>
+                                        </label>
+                                    </div>
+                                    
+                                    <div id="external-factors-options" class="ps-4 pt-2" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="weather_location" class="form-label">Weather Location</label>
+                                                    <input type="text" class="form-control" id="weather_location" name="weather_location" value="New York">
+                                                    <div class="form-text">City for weather data (e.g., New York, London, Tokyo)</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="country_code" class="form-label">Country</label>
+                                                    <select class="form-select" id="country_code" name="country_code">
+                                                        <option value="US" selected>United States</option>
+                                                        <option value="GB">United Kingdom</option>
+                                                        <option value="CA">Canada</option>
+                                                        <option value="AU">Australia</option>
+                                                        <option value="DE">Germany</option>
+                                                        <option value="FR">France</option>
+                                                    </select>
+                                                    <div class="form-text">Country for holidays and economic data</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            External factors that will be incorporated:
+                                            <ul class="mb-0 mt-2">
+                                                <li><i class="fas fa-cloud-sun me-1"></i> Weather (temperature, precipitation, etc.)</li>
+                                                <li><i class="fas fa-calendar-alt me-1"></i> Public holidays and events</li>
+                                                <li><i class="fas fa-chart-line me-1"></i> Economic indicators</li>
+                                                <li><i class="fas fa-shopping-cart me-1"></i> Retail events (Black Friday, etc.)</li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-end">
+                                            <a href="{{ url_for('external_factors') }}?from_configure=1" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-cog me-1"></i>Advanced Configuration
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">AI Model Selection</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="model_selection" id="auto_model" value="auto" checked>
+                                        <label class="form-check-label" for="auto_model">
+                                            <span class="fw-bold">Auto-select Best Model (Recommended)</span>
+                                            <div class="text-muted small">The AI will test multiple models and select the best one based on your data</div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="model_selection" id="manual_model" value="manual">
+                                        <label class="form-check-label" for="manual_model">
+                                            <span class="fw-bold">Manually Select Models</span>
+                                        </label>
+                                    </div>
+                                    <div class="models-container ps-4 pt-2" id="manual-models" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="models" value="arima" id="arima_model">
+                                                    <label class="form-check-label" for="arima_model">ARIMA</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="models" value="prophet" id="prophet_model">
+                                                    <label class="form-check-label" for="prophet_model">Prophet</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="models" value="linear" id="linear_model">
+                                                    <label class="form-check-label" for="linear_model">Linear Regression</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="models" value="ridge" id="ridge_model">
+                                                    <label class="form-check-label" for="ridge_model">Ridge Regression</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="models" value="random_forest" id="rf_model">
+                                                    <label class="form-check-label" for="rf_model">Random Forest</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="models" value="gradient_boosting" id="gb_model">
+                                                    <label class="form-check-label" for="gb_model">Gradient Boosting</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Advanced Options</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="feature_engineering" name="feature_engineering" value="1" checked>
+                                        <label class="form-check-label" for="feature_engineering">
+                                            <strong>Automated Feature Engineering</strong>
+                                            <div class="text-muted small">
+                                                Apply AI-driven feature extraction techniques to improve forecast accuracy
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="hyperparameter_tuning" name="hyperparameter_tuning" value="1" checked>
+                                        <label class="form-check-label" for="hyperparameter_tuning">
+                                            <strong>Hyperparameter Optimization</strong>
+                                            <div class="text-muted small">
+                                                Automatically optimize model parameters for better performance (increases processing time)
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="anomaly_detection" name="anomaly_detection" value="1" checked>
+                                        <label class="form-check-label" for="anomaly_detection">
+                                            <strong>Anomaly Detection</strong>
+                                            <div class="text-muted small">
+                                                Identify and handle outliers in historical data
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/upload" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Upload
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-magic me-2"></i>Generate Forecast
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AI-Powered Demand Forecasting</h5>
+                    <p>An advanced solution for logistics and supply chain optimization.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><small>&copy; 2025 AI Demand Forecasting. All rights reserved.</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Show/hide manual models selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoModel = document.getElementById('auto_model');
+            const manualModel = document.getElementById('manual_model');
+            const manualModelsContainer = document.getElementById('manual-models');
+            
+            autoModel.addEventListener('change', function() {
+                if (this.checked) {
+                    manualModelsContainer.style.display = 'none';
+                }
+            });
+            
+            manualModel.addEventListener('change', function() {
+                if (this.checked) {
+                    manualModelsContainer.style.display = 'block';
+                }
+            });
+            
+            // External factors toggle
+            const externalFactorsToggle = document.getElementById('use_external_factors');
+            const externalFactorsOptions = document.getElementById('external-factors-options');
+            
+            if (externalFactorsToggle && externalFactorsOptions) {
+                externalFactorsToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        externalFactorsOptions.style.display = 'block';
+                    } else {
+                        externalFactorsOptions.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

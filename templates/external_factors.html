@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Factors Configuration - AI-Powered Demand Forecasting</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-line me-2"></i>AI-Powered Demand Forecasting
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload">Upload Data</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0"><i class="fas fa-globe me-2"></i>External Factors Configuration</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    <ul class="mb-0 pl-0" style="list-style-type: none;">
+                                        {% for message in messages %}
+                                            <li>{{ message }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="mb-4">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>External Factors:</strong> Enhance your demand forecasting accuracy by incorporating external data sources that influence customer behavior and market dynamics.
+                            </div>
+                        </div>
+
+                        <!-- External Factors Form -->
+                        <form method="post" id="external-factors-form">
+                            
+                            <!-- Weather Data -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="weather_enabled" name="weather_enabled" {% if config.weather.enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="weather_enabled">
+                                            <i class="fas fa-cloud-sun me-2"></i>Weather Data
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <label for="weather_location" class="form-label">Location</label>
+                                                <input type="text" class="form-control" id="weather_location" name="weather_location" value="{{ config.weather.location }}">
+                                                <div class="form-text">City for weather data (e.g., New York, London, Tokyo)</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="weather_importance" class="form-label">Importance Weight</label>
+                                                <input type="range" class="form-range" min="0" max="1" step="0.1" id="weather_importance" name="weather_importance" value="{{ config.weather.importance }}">
+                                                <div class="text-center" id="weather_importance_value">{{ (config.weather.importance * 100)|int }}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Weather data includes temperature, precipitation, and extreme weather events that can influence consumer behavior.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Holidays & Public Events -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="holidays_enabled" name="holidays_enabled" {% if config.holidays.enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="holidays_enabled">
+                                            <i class="fas fa-calendar-alt me-2"></i>Holidays & Public Events
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <label for="country_code" class="form-label">Country</label>
+                                                <select class="form-select" id="country_code" name="country_code">
+                                                    <option value="US" {% if config.holidays.country == 'US' %}selected{% endif %}>United States</option>
+                                                    <option value="GB" {% if config.holidays.country == 'GB' %}selected{% endif %}>United Kingdom</option>
+                                                    <option value="CA" {% if config.holidays.country == 'CA' %}selected{% endif %}>Canada</option>
+                                                    <option value="AU" {% if config.holidays.country == 'AU' %}selected{% endif %}>Australia</option>
+                                                    <option value="DE" {% if config.holidays.country == 'DE' %}selected{% endif %}>Germany</option>
+                                                    <option value="FR" {% if config.holidays.country == 'FR' %}selected{% endif %}>France</option>
+                                                </select>
+                                                <div class="form-text">Country for holiday data</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="holidays_importance" class="form-label">Importance Weight</label>
+                                                <input type="range" class="form-range" min="0" max="1" step="0.1" id="holidays_importance" name="holidays_importance" value="{{ config.holidays.importance }}">
+                                                <div class="text-center" id="holidays_importance_value">{{ (config.holidays.importance * 100)|int }}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Includes national holidays, local events, and public celebrations that impact consumer behavior.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Economic Indicators -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="economic_enabled" name="economic_enabled" {% if config.economic.enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="economic_enabled">
+                                            <i class="fas fa-chart-line me-2"></i>Economic Indicators
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <p class="mb-2">Economic data includes:</p>
+                                                <ul>
+                                                    <li>Unemployment rate</li>
+                                                    <li>Inflation rate</li>
+                                                    <li>Consumer confidence</li>
+                                                    <li>Retail sales growth</li>
+                                                    <li>GDP growth</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="economic_importance" class="form-label">Importance Weight</label>
+                                                <input type="range" class="form-range" min="0" max="1" step="0.1" id="economic_importance" name="economic_importance" value="{{ config.economic.importance }}">
+                                                <div class="text-center" id="economic_importance_value">{{ (config.economic.importance * 100)|int }}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Economic indicators help capture broader market conditions that influence consumer spending patterns.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Retail Events -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="events_enabled" name="events_enabled" {% if config.events.enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="events_enabled">
+                                            <i class="fas fa-shopping-cart me-2"></i>Retail Events
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <p class="mb-2">Common retail events detected:</p>
+                                                <ul>
+                                                    <li>Black Friday & Cyber Monday</li>
+                                                    <li>Back-to-School season</li>
+                                                    <li>Valentine's Day</li>
+                                                    <li>Mother's/Father's Day</li>
+                                                    <li>Christmas shopping period</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="events_importance" class="form-label">Importance Weight</label>
+                                                <input type="range" class="form-range" min="0" max="1" step="0.1" id="events_importance" name="events_importance" value="{{ config.events.importance }}">
+                                                <div class="text-center" id="events_importance_value">{{ (config.events.importance * 100)|int }}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Retail events often drive significant sales fluctuations and seasonal patterns in demand.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Custom Events -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="custom_events_enabled" name="custom_events_enabled" {% if config.custom_events.enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="custom_events_enabled">
+                                            <i class="fas fa-calendar-plus me-2"></i>Custom Events
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="custom-events-container">
+                                        {% if config.custom_events.events %}
+                                            {% for event in config.custom_events.events %}
+                                                <div class="custom-event-row mb-3 row">
+                                                    <div class="col-md-3">
+                                                        <input type="text" class="form-control" name="event_name[]" placeholder="Event Name" value="{{ event.name }}">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="date" class="form-control" name="event_start_date[]" value="{{ event.start_date }}">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="date" class="form-control" name="event_end_date[]" value="{{ event.end_date }}">
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <input type="number" class="form-control" name="event_importance[]" min="0.1" max="1" step="0.1" placeholder="Importance" value="{{ event.importance }}">
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-sm btn-danger remove-event"><i class="fas fa-times"></i></button>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Event Name</label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Start Date</label>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">End Date</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label small">Importance (0-1)</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-event">
+                                            <i class="fas fa-plus me-2"></i>Add Custom Event
+                                        </button>
+                                    </div>
+                                    
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Add your own business-specific events such as promotions, marketing campaigns, or product launches.
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Configuration
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AI-Powered Demand Forecasting</h5>
+                    <p>An advanced solution for logistics and supply chain optimization.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><small>&copy; 2025 AI Demand Forecasting. All rights reserved.</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle importance weight sliders
+            const importanceSliders = document.querySelectorAll('.form-range');
+            importanceSliders.forEach(slider => {
+                const valueDisplay = document.getElementById(slider.id + '_value');
+                
+                slider.addEventListener('input', function() {
+                    valueDisplay.textContent = Math.round(slider.value * 100) + '%';
+                });
+            });
+            
+            // Add custom event button
+            document.getElementById('add-event').addEventListener('click', function() {
+                const container = document.querySelector('.custom-events-container');
+                
+                const eventRow = document.createElement('div');
+                eventRow.className = 'custom-event-row mb-3 row';
+                
+                eventRow.innerHTML = `
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="event_name[]" placeholder="Event Name">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" class="form-control" name="event_start_date[]">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" class="form-control" name="event_end_date[]">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" name="event_importance[]" min="0.1" max="1" step="0.1" placeholder="Importance" value="0.5">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-sm btn-danger remove-event"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+                
+                container.appendChild(eventRow);
+                
+                // Add event listener to the remove button
+                eventRow.querySelector('.remove-event').addEventListener('click', function() {
+                    container.removeChild(eventRow);
+                });
+            });
+            
+            // Remove event buttons
+            document.querySelectorAll('.remove-event').forEach(button => {
+                button.addEventListener('click', function() {
+                    const eventRow = this.closest('.custom-event-row');
+                    eventRow.parentNode.removeChild(eventRow);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
